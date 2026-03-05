@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 const STATUS_LABELS = {
   pending_delivery: "Pending",
@@ -23,6 +23,10 @@ const LogsView = forwardRef(function LogsView({ session }, ref) {
   const [error, setError] = useState("");
   const [volunteerFilter, setVolunteerFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [clearing, setClearing] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [clearError, setClearError] = useState("");
+  const confirmInputRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     addEntry(entry) {
@@ -52,6 +56,30 @@ const LogsView = forwardRef(function LogsView({ session }, ref) {
     }
     fetchLogs();
   }, [session]);
+
+  async function handleClearLogs() {
+    if (confirmText.trim().toLowerCase() !== "yes") {
+      setClearError('Type "yes" to confirm.');
+      confirmInputRef.current?.focus();
+      return;
+    }
+    setClearError("");
+    try {
+      const res = await fetch("/api/logs", {
+        method: "DELETE",
+        headers: {
+          "x-passcode": session.passcode,
+          "x-volunteer-name": session.volunteerName
+        }
+      });
+      if (!res.ok) throw new Error("Failed to clear logs.");
+      setEntries([]);
+      setClearing(false);
+      setConfirmText("");
+    } catch (err) {
+      setClearError(err.message);
+    }
+  }
 
   const volunteers = ["all", ...Array.from(new Set(entries.map((e) => e.volunteer))).sort()];
 
@@ -101,6 +129,31 @@ const LogsView = forwardRef(function LogsView({ session }, ref) {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="logs-clear-row">
+        {!clearing ? (
+          <button className="clear-logs-btn" onClick={() => { setClearing(true); setConfirmText(""); setClearError(""); }}>
+            Clear all logs
+          </button>
+        ) : (
+          <div className="clear-confirm-wrap">
+            <span className="clear-confirm-label">Type <strong>yes</strong> to confirm:</span>
+            <input
+              ref={confirmInputRef}
+              className="clear-confirm-input"
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleClearLogs()}
+              placeholder="yes"
+              autoFocus
+            />
+            <button className="clear-confirm-btn" onClick={handleClearLogs}>Confirm</button>
+            <button className="clear-cancel-btn" onClick={() => { setClearing(false); setConfirmText(""); setClearError(""); }}>Cancel</button>
+            {clearError && <span className="clear-error">{clearError}</span>}
+          </div>
+        )}
       </div>
 
       {loading && <p className="logs-empty">Loading logs...</p>}

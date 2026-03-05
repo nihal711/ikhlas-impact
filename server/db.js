@@ -193,6 +193,20 @@ export function getActivityLog(limit = 300) {
     .all(limit);
 }
 
+export function clearActivityLog() {
+  db.prepare("DELETE FROM activity_log").run();
+  // Remove all daily ndjson log files
+  try {
+    for (const file of fs.readdirSync(logsDir)) {
+      if (file.endsWith(".ndjson")) {
+        fs.unlinkSync(path.join(logsDir, file));
+      }
+    }
+  } catch {
+    // Non-fatal
+  }
+}
+
 export function wipeAndImportClusters(inputRows) {
   const transaction = db.transaction((rows) => {
     db.prepare("DELETE FROM houses").run();

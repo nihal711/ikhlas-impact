@@ -10,6 +10,7 @@ import {
   ensureVolunteer,
   getClusterSnapshot,
   getActivityLog,
+  clearActivityLog,
   updateHouseStatus,
   normalizeNameKey
 } from "./db.js";
@@ -112,6 +113,11 @@ app.get("/api/logs", authFromHeaders, adminOnly, (req, res) => {
   const limit = Math.min(Number(req.query.limit ?? 300), 1000);
   const entries = getActivityLog(limit);
   return res.json({ entries });
+});
+
+app.delete("/api/logs", authFromHeaders, adminOnly, (_req, res) => {
+  clearActivityLog();
+  return res.json({ ok: true });
 });
 
 io.use((socket, next) => {

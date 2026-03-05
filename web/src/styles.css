@@ -703,6 +703,98 @@ input {
   margin: 0;
 }
 
+/* ── Clear logs ─────────────────────────────────────────────────── */
+
+.logs-clear-row {
+  margin-bottom: 0.875rem;
+}
+
+.clear-logs-btn {
+  min-height: 36px;
+  padding: 0.2rem 0.9rem;
+  border-radius: 10px;
+  border: 1.5px solid #c0374a;
+  background: transparent;
+  color: #c0374a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.clear-logs-btn:active {
+  background: rgba(192, 55, 74, 0.1);
+}
+
+[data-dark="true"] .clear-logs-btn {
+  border-color: #e8849a;
+  color: #e8849a;
+}
+
+.clear-confirm-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.clear-confirm-label {
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.clear-confirm-input {
+  width: 80px;
+  min-height: 36px;
+  border: 1.5px solid var(--border-input);
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.clear-confirm-input:focus {
+  border-color: #c0374a;
+}
+
+.clear-confirm-btn {
+  min-height: 36px;
+  padding: 0.2rem 0.8rem;
+  border-radius: 8px;
+  border: none;
+  background: #c0374a;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.clear-confirm-btn:active {
+  background: #9e2b3b;
+}
+
+.clear-cancel-btn {
+  min-height: 36px;
+  padding: 0.2rem 0.8rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clear-error {
+  font-size: 0.82rem;
+  color: #e05568;
+  font-weight: 600;
+  width: 100%;
+}
+
 /* ── Misc ───────────────────────────────────────────────────────── */
 
 .error-text {
