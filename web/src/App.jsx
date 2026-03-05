@@ -140,6 +140,10 @@ function App() {
       }
     });
 
+    socket.on("houses:reset", () => {
+      loadData(session).catch(() => {});
+    });
+
     socket.on("house:updated", ({ house }) => {
       setClusters((currentClusters) =>
         currentClusters.map((cluster) => {

@@ -193,6 +193,18 @@ export function getActivityLog(limit = 300) {
     .all(limit);
 }
 
+export function resetAllHouseStatuses() {
+  return db
+    .prepare(
+      `UPDATE houses
+       SET status = 'pending_delivery',
+           last_updated_by = NULL,
+           last_updated_by_key = NULL,
+           last_updated_at = NULL`
+    )
+    .run();
+}
+
 export function clearActivityLog() {
   db.prepare("DELETE FROM activity_log").run();
   // Remove all daily ndjson log files

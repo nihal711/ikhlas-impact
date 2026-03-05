@@ -28,6 +28,11 @@ const LogsView = forwardRef(function LogsView({ session }, ref) {
   const [clearError, setClearError] = useState("");
   const confirmInputRef = useRef(null);
 
+  const [resetting, setResetting] = useState(false);
+  const [resetText, setResetText] = useState("");
+  const [resetError, setResetError] = useState("");
+  const resetInputRef = useRef(null);
+
   useImperativeHandle(ref, () => ({
     addEntry(entry) {
       setEntries((prev) => [entry, ...prev]);
@@ -78,6 +83,29 @@ const LogsView = forwardRef(function LogsView({ session }, ref) {
       setConfirmText("");
     } catch (err) {
       setClearError(err.message);
+    }
+  }
+
+  async function handleResetStatuses() {
+    if (resetText.trim().toLowerCase() !== "yes") {
+      setResetError('Type "yes" to confirm.');
+      resetInputRef.current?.focus();
+      return;
+    }
+    setResetError("");
+    try {
+      const res = await fetch("/api/houses/reset", {
+        method: "POST",
+        headers: {
+          "x-passcode": session.passcode,
+          "x-volunteer-name": session.volunteerName
+        }
+      });
+      if (!res.ok) throw new Error("Failed to reset statuses.");
+      setResetting(false);
+      setResetText("");
+    } catch (err) {
+      setResetError(err.message);
     }
   }
 
@@ -152,6 +180,31 @@ const LogsView = forwardRef(function LogsView({ session }, ref) {
             <button className="clear-confirm-btn" onClick={handleClearLogs}>Confirm</button>
             <button className="clear-cancel-btn" onClick={() => { setClearing(false); setConfirmText(""); setClearError(""); }}>Cancel</button>
             {clearError && <span className="clear-error">{clearError}</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="logs-clear-row">
+        {!resetting ? (
+          <button className="clear-logs-btn" onClick={() => { setResetting(true); setResetText(""); setResetError(""); }}>
+            Reset all statuses
+          </button>
+        ) : (
+          <div className="clear-confirm-wrap">
+            <span className="clear-confirm-label">Type <strong>yes</strong> to confirm:</span>
+            <input
+              ref={resetInputRef}
+              className="clear-confirm-input"
+              type="text"
+              value={resetText}
+              onChange={(e) => setResetText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleResetStatuses()}
+              placeholder="yes"
+              autoFocus
+            />
+            <button className="clear-confirm-btn" onClick={handleResetStatuses}>Confirm</button>
+            <button className="clear-cancel-btn" onClick={() => { setResetting(false); setResetText(""); setResetError(""); }}>Cancel</button>
+            {resetError && <span className="clear-error">{resetError}</span>}
           </div>
         )}
       </div>

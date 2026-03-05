@@ -11,6 +11,7 @@ import {
   getClusterSnapshot,
   getActivityLog,
   clearActivityLog,
+  resetAllHouseStatuses,
   updateHouseStatus,
   normalizeNameKey
 } from "./db.js";
@@ -118,6 +119,12 @@ app.get("/api/logs", authFromHeaders, adminOnly, (req, res) => {
 app.delete("/api/logs", authFromHeaders, adminOnly, (_req, res) => {
   clearActivityLog();
   return res.json({ ok: true });
+});
+
+app.post("/api/houses/reset", authFromHeaders, adminOnly, (_req, res) => {
+  const result = resetAllHouseStatuses();
+  io.emit("houses:reset");
+  return res.json({ ok: true, changed: result.changes });
 });
 
 io.use((socket, next) => {
