@@ -39,9 +39,9 @@
   --shadow-login: 0 16px 36px rgba(12, 21, 29, 0.12);
 
   /* Aura plane colours for login background */
-  --wave-1: rgba(16, 180, 100, 0.30);
-  --wave-2: rgba(10, 150, 80, 0.22);
-  --wave-3: rgba(5, 120, 60, 0.16);
+  --wave-1: rgba(195, 145, 18, 0.38);
+  --wave-2: rgba(160, 105, 8, 0.28);
+  --wave-3: rgba(230, 185, 35, 0.20);
 }
 
 [data-dark="true"] {
@@ -79,9 +79,9 @@
   --shadow-login: 0 20px 60px rgba(0, 0, 0, 0.75);
 
   /* Aura plane colours for login background */
-  --wave-1: rgba(180, 20, 90, 0.38);
-  --wave-2: rgba(130, 15, 130, 0.28);
-  --wave-3: rgba(100, 10, 80, 0.20);
+  --wave-1: rgba(180, 130, 15, 0.42);
+  --wave-2: rgba(140, 95, 5, 0.32);
+  --wave-3: rgba(210, 165, 25, 0.24);
 }
 
 * {
@@ -126,13 +126,13 @@ input {
   right: -25%;
   width: 65%;
   height: 65%;
-  background: radial-gradient(ellipse, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(210, 165, 25, 0.13) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
 [data-dark="true"] .login-screen::before {
-  background: radial-gradient(ellipse, rgba(139, 26, 45, 0.12) 0%, transparent 65%);
+  background: radial-gradient(ellipse, rgba(190, 140, 15, 0.16) 0%, transparent 65%);
 }
 
 .login-card {
@@ -178,40 +178,35 @@ input {
 }
 
 .brand-logo {
-  display: flex;
-  align-items: center;
+  display: block;
   min-width: 0;
   flex: 1;
 }
 
-.brand-logo img {
-  width: 22rem;
+.logo-svg {
+  display: block;
+  width: 18rem;
   max-width: 100%;
   height: auto;
-  display: block;
+  overflow: visible;
 }
 
-.brand-logo--header img {
-  width: 19rem;
+.logo-svg.brand-logo--header {
+  width: auto;
+  height: 1.8rem;
+  max-width: 100%;
 }
 
-.brand-logo .logo-dark {
-  display: none;
-}
-
-[data-dark="true"] .brand-logo .logo-dark {
-  display: block;
-}
-
-[data-dark="true"] .brand-logo .logo-light {
-  display: none;
-}
 
 .login-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-screen-toggle {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 2;
 }
 
 .login-card p {
@@ -928,8 +923,8 @@ input {
 /* ── Responsive tweaks (larger screens) ─────────────────────────── */
 
 @media (min-width: 540px) {
-  .brand-logo--header img {
-    width: 21rem;
+  .logo-svg.brand-logo--header {
+    height: 2.25rem;
   }
 
   .tab-num {

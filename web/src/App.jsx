@@ -5,6 +5,13 @@ import HouseRow from "./components/HouseRow";
 import DarkModeToggle from "./components/DarkModeToggle";
 import LogsView from "./components/LogsView";
 import LoginWaves from "./components/LoginWaves";
+import Logo from "./components/Logo";
+
+function getInitialDark() {
+  const stored = localStorage.getItem("ikhlas-dark");
+  if (stored !== null) return stored === "true";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
 
 const STATUS_LABELS = {
   pending_delivery: "Pending Delivery",
@@ -17,6 +24,12 @@ function normalizeNameInput(name) {
 }
 
 function App() {
+  const [dark, setDark] = useState(getInitialDark);
+
+  function toggleDark() {
+    setDark((d) => !d);
+  }
+
   const [session, setSession] = useState(() => {
     const raw = localStorage.getItem("ikhlas-session");
     return raw ? JSON.parse(raw) : null;
@@ -215,13 +228,12 @@ function App() {
     return (
       <main className="login-screen">
         <LoginWaves />
+        <div className="login-screen-toggle">
+          <DarkModeToggle dark={dark} onToggle={toggleDark} />
+        </div>
         <section className="login-card">
           <div className="login-top-row">
-            <div className="brand-logo">
-              <img src="/svg-light.svg" alt="Ikhlas Impact" className="logo-light" />
-              <img src="/svg-dark.svg" alt="Ikhlas Impact" className="logo-dark" />
-            </div>
-            <DarkModeToggle />
+            <Logo dark={dark} className="brand-logo" />
           </div>
           <form onSubmit={handleLogin}>
             <label>
@@ -294,15 +306,14 @@ function App() {
   return (
     <main className="app-shell">
       <header className="top-bar">
-        <div className="brand-logo brand-logo--header">
-          <img src="/svg-light.svg" alt="Ikhlas Impact" className="logo-light" />
-          <img src="/svg-dark.svg" alt="Ikhlas Impact" className="logo-dark" />
+        <div className="brand-logo">
+          <Logo dark={dark} className="brand-logo--header" />
         </div>
 
         <div className="volunteer-block">
           <span>{session.volunteerName}</span>
           <div className="volunteer-actions">
-            <DarkModeToggle />
+            <DarkModeToggle dark={dark} onToggle={toggleDark} />
             <button onClick={logout}>Logout</button>
           </div>
         </div>
