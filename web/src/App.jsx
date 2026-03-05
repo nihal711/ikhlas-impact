@@ -55,6 +55,8 @@ function App() {
   const [dragOverId, setDragOverId] = useState(null);
   const [renames, setRenames] = useState({}); // { houseId: newAddress }
   const [editingId, setEditingId] = useState(null);
+  const reorderListRef = useRef(null);
+  const activeDragRef = useRef(null); // { id, overId }
 
   const activeCluster = useMemo(
     () => clusters.find((cluster) => cluster.id === activeClusterId) ?? null,
@@ -271,32 +273,46 @@ function App() {
     setReorderList(next);
   }
 
-  function onDragStart(e, id) {
+  function handleDragPointerDown(e, id) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    activeDragRef.current = { id, overId: null };
     setDragActiveId(id);
-    e.dataTransfer.effectAllowed = "move";
-  }
-
-  function onDragOver(e, id) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (id !== dragActiveId) setDragOverId(id);
-  }
-
-  function onDrop(e, targetId) {
-    e.preventDefault();
-    if (!dragActiveId || dragActiveId === targetId) {
-      setDragActiveId(null);
-      setDragOverId(null);
-      return;
-    }
-    const from = reorderList.findIndex((h) => h.id === dragActiveId);
-    const to = reorderList.findIndex((h) => h.id === targetId);
-    moveReorderItem(from, to);
-    setDragActiveId(null);
     setDragOverId(null);
   }
 
-  function onDragEnd() {
+  function handleDragPointerMove(e) {
+    if (!activeDragRef.current) return;
+    e.preventDefault();
+    const cards = reorderListRef.current?.querySelectorAll("[data-reorder-id]");
+    if (!cards) return;
+    for (const card of cards) {
+      const rect = card.getBoundingClientRect();
+      if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        const targetId = Number(card.dataset.reorderId);
+        if (targetId !== activeDragRef.current.id) {
+          activeDragRef.current.overId = targetId;
+          setDragOverId(targetId);
+        }
+        break;
+      }
+    }
+  }
+
+  function handleDragPointerUp() {
+    if (!activeDragRef.current) return;
+    const { id: activeId, overId } = activeDragRef.current;
+    activeDragRef.current = null;
+    if (activeId && overId && activeId !== overId) {
+      setReorderList((list) => {
+        const from = list.findIndex((h) => h.id === activeId);
+        const to = list.findIndex((h) => h.id === overId);
+        if (from === -1 || to === -1) return list;
+        const next = [...list];
+        const [moved] = next.splice(from, 1);
+        next.splice(to, 0, moved);
+        return next;
+      });
+    }
     setDragActiveId(null);
     setDragOverId(null);
   }
@@ -560,20 +576,20 @@ function App() {
               </div>
 
               {reorderMode ? (
-                <div className="house-list reorder-list">
+                <div className="house-list reorder-list" ref={reorderListRef}>
                   {reorderList.map((house, index) => (
                     <div
                       key={house.id}
+                      data-reorder-id={house.id}
                       className={`house-card reorder-card${dragActiveId === house.id ? " reorder-dragging" : ""}${dragOverId === house.id ? " reorder-drag-over" : ""}`}
-                      draggable
-                      onDragStart={(e) => onDragStart(e, house.id)}
-                      onDragOver={(e) => onDragOver(e, house.id)}
-                      onDrop={(e) => onDrop(e, house.id)}
-                      onDragEnd={onDragEnd}
                     >
                       <div
                         className="drag-handle"
                         aria-label="Drag to reorder"
+                        onPointerDown={(e) => handleDragPointerDown(e, house.id)}
+                        onPointerMove={handleDragPointerMove}
+                        onPointerUp={handleDragPointerUp}
+                        onPointerCancel={handleDragPointerUp}
                       >
                         <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
                           <circle cx="7" cy="5"  r="1.4" fill="currentColor"/>
@@ -613,18 +629,18 @@ function App() {
                         )}
                         <span className="reorder-card-id">#{house.houseId}</span>
                       </div>
-                      <button
-                        className="reorder-edit-btn"
-                        onClick={() => setEditingId(editingId === house.id ? null : house.id)}
-                        aria-label="Edit address"
-                        title="Rename"
-                      >
-                        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
-                          <path d="M13.5 3.5l3 3-9 9H4.5v-3l9-9z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
-                          <path d="M11.5 5.5l3 3" stroke="currentColor" strokeWidth="1.6"/>
-                        </svg>
-                      </button>
-                      <div className="reorder-move-btns">
+                      <div className="reorder-card-actions">
+                        <button
+                          className="reorder-edit-btn"
+                          onClick={() => setEditingId(editingId === house.id ? null : house.id)}
+                          aria-label="Edit address"
+                          title="Rename"
+                        >
+                          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="13" height="13">
+                            <path d="M13.5 3.5l3 3-9 9H4.5v-3l9-9z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+                            <path d="M11.5 5.5l3 3" stroke="currentColor" strokeWidth="1.6"/>
+                          </svg>
+                        </button>
                         <button
                           className="reorder-move-btn"
                           onClick={() => moveReorderItem(index, index - 1)}
