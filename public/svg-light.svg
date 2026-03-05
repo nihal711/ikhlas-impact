@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 80">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200&amp;display=swap');
+      .logo-text {
+        fill: transparent;
+        stroke: #333333;
+        stroke-width: 1.2;
+        stroke-dasharray: 800;
+        stroke-dashoffset: 800;
+        animation: draw 3.5s ease-in-out forwards;
+      }
+      @keyframes draw {
+        0%   { stroke-dashoffset: 800; fill: transparent; }
+        60%  { stroke-dashoffset: 0;   fill: transparent; }
+        100% { stroke-dashoffset: 0;   fill: #333333; stroke-width: 0.4; }
+      }
+    </style>
+  </defs>
+  <text
+    x="0" y="50%"
+    dominant-baseline="middle"
+    text-anchor="start"
+    font-family="'Montserrat', sans-serif"
+    font-size="52"
+    font-weight="200"
+    letter-spacing="6"
+    class="logo-text">IKHLAS IMPACT</text>
+</svg>

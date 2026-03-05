@@ -144,6 +144,7 @@ input {
   box-shadow: var(--shadow-login);
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 [data-dark="true"] .login-card {
@@ -176,16 +177,41 @@ input {
   background: linear-gradient(90deg, #6e1525, #b52240);
 }
 
+.brand-logo {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.brand-logo img {
+  width: 22rem;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.brand-logo--header img {
+  width: 19rem;
+}
+
+.brand-logo .logo-dark {
+  display: none;
+}
+
+[data-dark="true"] .brand-logo .logo-dark {
+  display: block;
+}
+
+[data-dark="true"] .brand-logo .logo-light {
+  display: none;
+}
+
 .login-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.1rem;
-}
-
-.login-card h1 {
-  margin: 0;
-  font-size: 2rem;
 }
 
 .login-card p {
@@ -244,6 +270,7 @@ input {
 .dark-toggle {
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   border-radius: 10px;
   border: 1.5px solid var(--btn-outline-border);
   background: var(--btn-outline-bg);
@@ -866,8 +893,8 @@ input {
 /* ── Responsive tweaks (larger screens) ─────────────────────────── */
 
 @media (min-width: 540px) {
-  .top-bar h1 {
-    font-size: 1.9rem;
+  .brand-logo--header img {
+    width: 21rem;
   }
 
   .tab-num {

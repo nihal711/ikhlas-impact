@@ -217,10 +217,12 @@ function App() {
         <LoginWaves />
         <section className="login-card">
           <div className="login-top-row">
-            <h1>Ikhlas Impact</h1>
+            <div className="brand-logo">
+              <img src="/svg-light.svg" alt="Ikhlas Impact" className="logo-light" />
+              <img src="/svg-dark.svg" alt="Ikhlas Impact" className="logo-dark" />
+            </div>
             <DarkModeToggle />
           </div>
-          <p>Donation Delivery Tracker</p>
           <form onSubmit={handleLogin}>
             <label>
               Shared Passcode
@@ -274,9 +276,9 @@ function App() {
   return (
     <main className="app-shell">
       <header className="top-bar">
-        <div>
-          <h1>Ikhlas Impact</h1>
-          <p>Live donation bag delivery tracker</p>
+        <div className="brand-logo brand-logo--header">
+          <img src="/svg-light.svg" alt="Ikhlas Impact" className="logo-light" />
+          <img src="/svg-dark.svg" alt="Ikhlas Impact" className="logo-dark" />
         </div>
 
         <div className="volunteer-block">
