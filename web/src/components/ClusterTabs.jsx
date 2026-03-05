@@ -22,14 +22,14 @@ function ClusterTabs({ clusters, activeClusterId, onSelectCluster }) {
             key={cluster.id}
             role="tab"
             aria-selected={activeClusterId === cluster.id}
-            aria-label={`${cluster.name} – ${cluster.totals.delivered} of ${cluster.totalHouses} delivered`}
+            aria-label={`${cluster.name} – ${cluster.totals.delivered + cluster.totals.placed_at_door} of ${cluster.totalHouses} completed`}
             title={cluster.name}
             className={`tab ${activeClusterId === cluster.id ? "tab-active" : ""}`}
             onClick={() => onSelectCluster(cluster.id)}
           >
             <span className="tab-num">{num}</span>
             {area ? <span className="tab-name">{area}</span> : null}
-            <span className="tab-count">{cluster.totals.delivered}/{cluster.totalHouses}</span>
+            <span className="tab-count">{cluster.totals.delivered + cluster.totals.placed_at_door}/{cluster.totalHouses}</span>
           </button>
         );
       })}
