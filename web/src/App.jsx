@@ -250,6 +250,24 @@ function App() {
           </form>
 
           {error ? <p className="error-text">{error}</p> : null}
+
+          <div className="social-links">
+            <a href="https://www.instagram.com/ikhlasimpact/" target="_blank" rel="noopener noreferrer" className="social-link">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="20" height="20" rx="5.5" ry="5.5" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+                <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+              Instagram
+            </a>
+            <a href="https://chat.whatsapp.com/GisK3V2b1H9JMj2mGkNCXH?mode=gi_t" target="_blank" rel="noopener noreferrer" className="social-link">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.656 1.438 5.168L2 22l4.978-1.418A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+                <path d="M8.5 9.5c.2.8.8 2.2 2 3.4 1.2 1.2 2.7 1.9 3.5 2.1l1.2-1.2c.2-.2.5-.2.7-.1.6.3 1.3.5 1.8.6.3.1.5.4.5.7v2c0 .4-.3.7-.7.7C9.8 17.7 6.3 14.2 6 8.7c0-.4.3-.7.7-.7h2c.3 0 .6.2.7.5.1.5.3 1.2.6 1.8.1.2.1.5-.1.7L8.5 9.5z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+              </svg>
+              WhatsApp
+            </a>
+          </div>
         </section>
       </main>
     );
