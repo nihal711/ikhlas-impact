@@ -647,6 +647,169 @@ input {
   margin-bottom: 0.75rem;
 }
 
+/* ── Reorder controls ────────────────────────────────────────────── */
+
+.reorder-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.reorder-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 34px;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.reorder-btn:hover {
+  color: var(--text);
+  border-color: var(--text-2);
+}
+
+.reorder-done-btn {
+  min-height: 34px;
+  padding: 0.2rem 0.85rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--btn-primary);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.reorder-done-btn:active { opacity: 0.8; }
+
+.reorder-cancel-btn {
+  min-height: 34px;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reorder-cancel-btn:active { opacity: 0.8; }
+
+.reorder-list { user-select: none; }
+
+.reorder-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  cursor: default;
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+.reorder-card.reorder-dragging {
+  opacity: 0.4;
+}
+
+.reorder-card.reorder-drag-over {
+  box-shadow: 0 0 0 2px var(--btn-primary);
+}
+
+.drag-handle {
+  color: var(--text-2);
+  cursor: grab;
+  padding: 0.2rem;
+  flex-shrink: 0;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+}
+.drag-handle:active { cursor: grabbing; }
+
+.reorder-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.reorder-card-address {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reorder-card-address.reorder-renamed {
+  color: var(--btn-primary);
+}
+
+.reorder-card-input {
+  width: 100%;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1.5px solid var(--btn-primary);
+  border-radius: 8px;
+  padding: 0.2rem 0.5rem;
+  outline: none;
+}
+
+.reorder-card-id {
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+
+.reorder-edit-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.reorder-edit-btn:hover { color: var(--text); border-color: var(--text-2); }
+
+.reorder-move-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.reorder-move-btn {
+  width: 28px;
+  height: 24px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.reorder-move-btn:disabled { opacity: 0.25; cursor: default; }
+.reorder-move-btn:not(:disabled):active { background: var(--surface); }
+
 .filter-pills {
   display: flex;
   flex-wrap: wrap;

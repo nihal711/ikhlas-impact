@@ -18,6 +18,14 @@ const db = new Database(dbPath);
 
 export const STATUS_VALUES = ["pending_delivery", "placed_at_door", "delivered"];
 
+// Migration: add sort_order to houses if it doesn't exist yet
+try {
+  db.exec("ALTER TABLE houses ADD COLUMN sort_order INTEGER");
+  db.exec("UPDATE houses SET sort_order = id WHERE sort_order IS NULL");
+} catch {
+  // Column already exists — no-op
+}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS allocations (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,7 +108,7 @@ export function getClusterSnapshot() {
       `SELECT id, house_id AS houseId, address, cluster_id AS clusterId, status,
               last_updated_by AS lastUpdatedBy, last_updated_at AS lastUpdatedAt
        FROM houses
-       ORDER BY id ASC`
+       ORDER BY COALESCE(sort_order, id) ASC, id ASC`
     )
     .all();
 
@@ -213,6 +221,24 @@ export function resetAllHouseStatuses() {
            last_updated_at = NULL`
     )
     .run();
+}
+
+export function renameHouse(houseId, newAddress) {
+  return db
+    .prepare("UPDATE houses SET address = ? WHERE id = ?")
+    .run(newAddress.trim(), Number(houseId));
+}
+
+export function reorderHouses(clusterId, orderedIds) {
+  const update = db.prepare(
+    "UPDATE houses SET sort_order = ? WHERE id = ? AND cluster_id = ?"
+  );
+  const transaction = db.transaction((ids) => {
+    ids.forEach((id, index) => {
+      update.run(index, Number(id), Number(clusterId));
+    });
+  });
+  transaction(orderedIds);
 }
 
 export function clearActivityLog() {

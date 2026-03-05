@@ -17,7 +17,9 @@ import {
   getAllocations,
   addAllocation,
   updateAllocation,
-  deleteAllocation
+  deleteAllocation,
+  reorderHouses,
+  renameHouse
 } from "./db.js";
 
 dotenv.config();
@@ -131,6 +133,29 @@ app.delete("/api/allocations/:id", authFromHeaders, adminOnly, (req, res) => {
   const allocations = getAllocations();
   io.emit("allocations:updated", { allocations });
   return res.json({ allocations });
+});
+
+app.put("/api/clusters/:clusterId/houses/order", authFromHeaders, (req, res) => {
+  const clusterId = Number(req.params.clusterId);
+  const { houseIds, renames } = req.body ?? {};
+
+  if (!Number.isInteger(clusterId) || !Array.isArray(houseIds) || houseIds.length === 0) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+
+  // Apply renames first (renames is an object { houseId: newAddress })
+  if (renames && typeof renames === "object") {
+    for (const [id, address] of Object.entries(renames)) {
+      if (address && String(address).trim()) {
+        renameHouse(id, String(address).trim());
+      }
+    }
+  }
+
+  reorderHouses(clusterId, houseIds);
+  const clusters = getClusterSnapshot();
+  io.emit("clusters:reordered", { clusters });
+  return res.json({ ok: true, clusters });
 });
 
 app.patch("/api/houses/:houseId/status", authFromHeaders, (req, res) => {

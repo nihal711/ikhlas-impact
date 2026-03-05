@@ -48,15 +48,28 @@ function App() {
   const [updatingHouseId, setUpdatingHouseId] = useState(null);
   const logsViewRef = useRef(null);
 
+  // Reorder mode
+  const [reorderMode, setReorderMode] = useState(false);
+  const [reorderList, setReorderList] = useState([]);
+  const [dragActiveId, setDragActiveId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
+  const [renames, setRenames] = useState({}); // { houseId: newAddress }
+  const [editingId, setEditingId] = useState(null);
+
   const activeCluster = useMemo(
     () => clusters.find((cluster) => cluster.id === activeClusterId) ?? null,
     [clusters, activeClusterId]
   );
 
-  // Reset search and filter when cluster changes
+  // Reset search, filter, and reorder mode when cluster changes
   useEffect(() => {
     setSearchQuery("");
     setStatusFilter("all");
+    setReorderMode(false);
+    setDragActiveId(null);
+    setDragOverId(null);
+    setRenames({});
+    setEditingId(null);
   }, [activeClusterId]);
 
   async function handleLogin(event) {
@@ -157,6 +170,10 @@ function App() {
       loadData(session).catch(() => {});
     });
 
+    socket.on("clusters:reordered", ({ clusters: updated }) => {
+      setClusters(updated);
+    });
+
     socket.on("allocations:updated", ({ allocations: updated }) => {
       setAllocations(updated);
     });
@@ -208,6 +225,81 @@ function App() {
       }
     };
   }, [session]);
+
+  function enterReorderMode() {
+    setReorderList([...(activeCluster?.houses ?? [])]);
+    setRenames({});
+    setEditingId(null);
+    setReorderMode(true);
+  }
+
+  function cancelReorder() {
+    setReorderMode(false);
+    setDragActiveId(null);
+    setDragOverId(null);
+    setRenames({});
+    setEditingId(null);
+  }
+
+  async function saveReorder() {
+    const orderedIds = reorderList.map((h) => h.id);
+    try {
+      await fetch(`/api/clusters/${activeClusterId}/houses/order`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-passcode": session.passcode,
+          "x-volunteer-name": session.volunteerName
+        },
+        body: JSON.stringify({ houseIds: orderedIds, renames })
+      });
+    } catch {
+      setError("Failed to save order.");
+    }
+    setReorderMode(false);
+    setDragActiveId(null);
+    setDragOverId(null);
+    setRenames({});
+    setEditingId(null);
+  }
+
+  function moveReorderItem(fromIndex, toIndex) {
+    if (toIndex < 0 || toIndex >= reorderList.length) return;
+    const next = [...reorderList];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    setReorderList(next);
+  }
+
+  function onDragStart(e, id) {
+    setDragActiveId(id);
+    e.dataTransfer.effectAllowed = "move";
+  }
+
+  function onDragOver(e, id) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (id !== dragActiveId) setDragOverId(id);
+  }
+
+  function onDrop(e, targetId) {
+    e.preventDefault();
+    if (!dragActiveId || dragActiveId === targetId) {
+      setDragActiveId(null);
+      setDragOverId(null);
+      return;
+    }
+    const from = reorderList.findIndex((h) => h.id === dragActiveId);
+    const to = reorderList.findIndex((h) => h.id === targetId);
+    moveReorderItem(from, to);
+    setDragActiveId(null);
+    setDragOverId(null);
+  }
+
+  function onDragEnd() {
+    setDragActiveId(null);
+    setDragOverId(null);
+  }
 
   async function changeHouseStatus(houseId, status) {
     if (!session) {
@@ -432,7 +524,7 @@ function App() {
               </div>
 
               <div className="status-filter-row">
-                {[
+                {!reorderMode && [
                   { key: "all", label: "All" },
                   { key: "pending", label: "Pending" },
                   { key: "completed", label: "Completed" }
@@ -445,27 +537,126 @@ function App() {
                     {f.label}
                   </button>
                 ))}
-                {(searchQuery || statusFilter !== "all") && (
+                {!reorderMode && (searchQuery || statusFilter !== "all") && (
                   <span className="search-count">
                     {filteredHouses.length} of {activeCluster.houses.length}
                   </span>
                 )}
+                <div className="reorder-actions">
+                  {reorderMode ? (
+                    <>
+                      <button className="reorder-done-btn" onClick={saveReorder}>Done</button>
+                      <button className="reorder-cancel-btn" onClick={cancelReorder}>Cancel</button>
+                    </>
+                  ) : (
+                    <button className="reorder-btn" onClick={enterReorderMode} title="Edit houses">
+                      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                      Edit
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="house-list">
-                {filteredHouses.length > 0 ? (
-                  filteredHouses.map((house) => (
-                    <HouseRow
+              {reorderMode ? (
+                <div className="house-list reorder-list">
+                  {reorderList.map((house, index) => (
+                    <div
                       key={house.id}
-                      house={{ ...house, statusLabel: STATUS_LABELS[house.status] }}
-                      onStatusChange={changeHouseStatus}
-                      updating={updatingHouseId === house.id}
-                    />
-                  ))
-                ) : (
-                  <p className="logs-empty">No houses match your search.</p>
-                )}
-              </div>
+                      className={`house-card reorder-card${dragActiveId === house.id ? " reorder-dragging" : ""}${dragOverId === house.id ? " reorder-drag-over" : ""}`}
+                      draggable
+                      onDragStart={(e) => onDragStart(e, house.id)}
+                      onDragOver={(e) => onDragOver(e, house.id)}
+                      onDrop={(e) => onDrop(e, house.id)}
+                      onDragEnd={onDragEnd}
+                    >
+                      <div
+                        className="drag-handle"
+                        aria-label="Drag to reorder"
+                      >
+                        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                          <circle cx="7" cy="5"  r="1.4" fill="currentColor"/>
+                          <circle cx="13" cy="5"  r="1.4" fill="currentColor"/>
+                          <circle cx="7" cy="10" r="1.4" fill="currentColor"/>
+                          <circle cx="13" cy="10" r="1.4" fill="currentColor"/>
+                          <circle cx="7" cy="15" r="1.4" fill="currentColor"/>
+                          <circle cx="13" cy="15" r="1.4" fill="currentColor"/>
+                        </svg>
+                      </div>
+                      <div className="reorder-card-body">
+                        {editingId === house.id ? (
+                          <input
+                            className="reorder-card-input"
+                            autoFocus
+                            defaultValue={renames[house.id] ?? house.address}
+                            onBlur={(e) => {
+                              const val = e.target.value.trim();
+                              if (val && val !== house.address) {
+                                setRenames((prev) => ({ ...prev, [house.id]: val }));
+                              } else if (!val) {
+                                setRenames((prev) => { const n = { ...prev }; delete n[house.id]; return n; });
+                              }
+                              setEditingId(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") e.target.blur();
+                              if (e.key === "Escape") { setEditingId(null); }
+                            }}
+                          />
+                        ) : (
+                          <span
+                            className={`reorder-card-address${renames[house.id] ? " reorder-renamed" : ""}`}
+                          >
+                            {renames[house.id] ?? house.address}
+                          </span>
+                        )}
+                        <span className="reorder-card-id">#{house.houseId}</span>
+                      </div>
+                      <button
+                        className="reorder-edit-btn"
+                        onClick={() => setEditingId(editingId === house.id ? null : house.id)}
+                        aria-label="Edit address"
+                        title="Rename"
+                      >
+                        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+                          <path d="M13.5 3.5l3 3-9 9H4.5v-3l9-9z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+                          <path d="M11.5 5.5l3 3" stroke="currentColor" strokeWidth="1.6"/>
+                        </svg>
+                      </button>
+                      <div className="reorder-move-btns">
+                        <button
+                          className="reorder-move-btn"
+                          onClick={() => moveReorderItem(index, index - 1)}
+                          disabled={index === 0}
+                          aria-label="Move up"
+                        >▲</button>
+                        <button
+                          className="reorder-move-btn"
+                          onClick={() => moveReorderItem(index, index + 1)}
+                          disabled={index === reorderList.length - 1}
+                          aria-label="Move down"
+                        >▼</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="house-list">
+                  {filteredHouses.length > 0 ? (
+                    filteredHouses.map((house) => (
+                      <HouseRow
+                        key={house.id}
+                        house={{ ...house, statusLabel: STATUS_LABELS[house.status] }}
+                        onStatusChange={changeHouseStatus}
+                        updating={updatingHouseId === house.id}
+                      />
+                    ))
+                  ) : (
+                    <p className="logs-empty">No houses match your search.</p>
+                  )}
+                </div>
+              )}
             </section>
           ) : (
             <section className="cluster-panel">
