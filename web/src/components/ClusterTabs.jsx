@@ -1,12 +1,13 @@
 function getShortLabel(name) {
-  // "Cluster 1: Jurong & Boon Lay (Far West)" → "C1" + "Jurong & Boon Lay"
+  // "Cluster 1: Jurong & Boon Lay (Far West)" → "C1" + "Jurong"
   const match = name.match(/^Cluster\s+(\d+)(?::\s*(.+))?$/i);
   if (match) {
     const num = match[1];
     const rest = match[2] ?? "";
-    // Strip parenthetical suffix like "(Far West)"
-    const short = rest.replace(/\s*\(.*?\)\s*$/, "").trim();
-    return { num: `C${num}`, area: short };
+    // Strip parenthetical suffix, then take only the first location (before comma or " & ")
+    const stripped = rest.replace(/\s*\(.*?\)\s*$/, "").trim();
+    const firstPart = stripped.split(/,|\s+&\s+/)[0].trim();
+    return { num: `C${num}`, area: firstPart };
   }
   return { num: name.slice(0, 4), area: "" };
 }

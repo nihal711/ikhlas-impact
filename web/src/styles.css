@@ -325,37 +325,26 @@ input {
   min-height: 38px;
 }
 
-/* ── Cluster tabs (horizontal scroll strip) ─────────────────────── */
+/* ── Cluster tabs (2-row 4-column grid) ─────────────────────────── */
 
 .tabs {
-  display: flex;
-  overflow-x: auto;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
   margin-bottom: 0.875rem;
-  padding-bottom: 4px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .tab {
-  flex: 0 0 auto;
-  min-width: 78px;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--tab-bg);
   color: var(--tab-text);
-  min-height: 68px;
-  padding: 0.55rem 0.6rem;
+  min-height: 58px;
+  padding: 0.45rem 0.3rem;
   display: grid;
   align-content: center;
-  gap: 0.15rem;
+  gap: 0.1rem;
   text-align: center;
-  scroll-snap-align: start;
   cursor: pointer;
 }
 
@@ -370,23 +359,26 @@ input {
 
 .tab-num {
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   line-height: 1;
 }
 
 .tab-name {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
   opacity: 0.85;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  hyphens: auto;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 72px;
 }
 
 .tab-count {
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 700;
   opacity: 0.9;
 }
@@ -786,12 +778,16 @@ input {
     font-size: 1.9rem;
   }
 
-  .tab {
-    min-width: 100px;
+  .tab-num {
+    font-size: 1.05rem;
   }
 
   .tab-name {
-    max-width: 88px;
+    font-size: 0.68rem;
+  }
+
+  .tab-count {
+    font-size: 0.75rem;
   }
 
   .status-button {
