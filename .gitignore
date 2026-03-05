@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Runtime data — never commit live data or secrets
+data/
+logs/
+imports/
+
+# Environment — keep secrets off GitHub
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Excel source file (sensitive addresses)
+*.xlsx
+*.xls

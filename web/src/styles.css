@@ -1,0 +1,800 @@
+:root {
+  font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+
+  /* Light theme tokens */
+  --bg: linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+  --bg-solid: #f0f5fa;
+  --surface: #ffffff;
+  --surface-2: #edf3fa;
+  --border: #d5dfe8;
+  --border-input: #cad5de;
+  --text: #172026;
+  --text-2: #4e5f6d;
+  --text-label: #2f3c46;
+  --tab-bg: #dfe9f4;
+  --tab-text: #1b2b36;
+  --tab-active-bg: #0f1720;
+  --tab-active-text: #ffffff;
+  --btn-primary: #1769ff;
+  --btn-primary-active: #1055d4;
+  --btn-outline-border: #c8d2da;
+  --btn-outline-bg: #ffffff;
+  --status-btn-bg: #f8fbff;
+  --status-btn-border: #c3cfda;
+  --status-selected-bg: #dce9ff;
+  --status-selected-border: #1769ff;
+  --status-selected-text: #0c4bcc;
+  --progress-track: #e4ecf4;
+  --progress-fill: #1769ff;
+  --pill-pending-bg: #fff4d6;
+  --pill-pending-text: #8a5b00;
+  --pill-placed-bg: #dff3ff;
+  --pill-placed-text: #005d99;
+  --pill-delivered-bg: #ddf7e5;
+  --pill-delivered-text: #09693f;
+  --shadow-card: 0 8px 24px rgba(14, 24, 32, 0.09);
+  --shadow-login: 0 16px 36px rgba(12, 21, 29, 0.12);
+
+  /* Aura plane colours for login background */
+  --wave-1: rgba(16, 180, 100, 0.30);
+  --wave-2: rgba(10, 150, 80, 0.22);
+  --wave-3: rgba(5, 120, 60, 0.16);
+}
+
+[data-dark="true"] {
+  --bg: linear-gradient(160deg, #0a0707 0%, #110d0d 50%, #150e0e 100%);
+  --bg-solid: #0a0707;
+  --surface: #1c1414;
+  --surface-2: #221919;
+  --border: #382424;
+  --border-input: #3d2828;
+  --text: #ede5e5;
+  --text-2: #9e8a8a;
+  --text-label: #c8b4b4;
+  --tab-bg: #201616;
+  --tab-text: #c8b4b4;
+  --tab-active-bg: #ede5e5;
+  --tab-active-text: #0a0707;
+  --btn-primary: #8b1a2d;
+  --btn-primary-active: #6e1525;
+  --btn-outline-border: #382424;
+  --btn-outline-bg: #1c1414;
+  --status-btn-bg: #191212;
+  --status-btn-border: #382424;
+  --status-selected-bg: #2a0f18;
+  --status-selected-border: #8b1a2d;
+  --status-selected-text: #e8849a;
+  --progress-track: #201616;
+  --progress-fill: #8b1a2d;
+  --pill-pending-bg: #3a2600;
+  --pill-pending-text: #ffd166;
+  --pill-placed-bg: #2a0f18;
+  --pill-placed-text: #e8849a;
+  --pill-delivered-bg: #0f2010;
+  --pill-delivered-text: #6ee7b7;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.55);
+  --shadow-login: 0 20px 60px rgba(0, 0, 0, 0.75);
+
+  /* Aura plane colours for login background */
+  --wave-1: rgba(180, 20, 90, 0.38);
+  --wave-2: rgba(130, 15, 130, 0.28);
+  --wave-3: rgba(100, 10, 80, 0.20);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--text);
+  background: var(--bg);
+  transition: background 0.2s, color 0.2s;
+}
+
+button,
+input {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── Login ─────────────────────────────────────────────────────── */
+
+.login-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Soft ambient glow orb in the background */
+.login-screen::before {
+  content: "";
+  position: absolute;
+  top: -15%;
+  right: -25%;
+  width: 65%;
+  height: 65%;
+  background: radial-gradient(ellipse, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-dark="true"] .login-screen::before {
+  background: radial-gradient(ellipse, rgba(139, 26, 45, 0.12) 0%, transparent 65%);
+}
+
+.login-card {
+  width: min(440px, 100%);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 22px;
+  padding: 1.75rem 1.5rem;
+  box-shadow: var(--shadow-login);
+  position: relative;
+  z-index: 1;
+}
+
+[data-dark="true"] .login-card {
+  background: rgba(18, 10, 11, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(139, 26, 45, 0.18);
+}
+
+[data-dark="true"] .login-card input {
+  background: rgba(12, 7, 8, 0.6);
+}
+
+/* Wine red gradient primary button in dark mode */
+[data-dark="true"] .login-card button[type="submit"] {
+  background: linear-gradient(145deg, #8b1a2d 0%, #4a0e1a 100%);
+}
+
+[data-dark="true"] .login-card button[type="submit"]:active {
+  background: linear-gradient(145deg, #6e1525 0%, #3a0a14 100%);
+}
+
+/* Gradient accents for active states in dark mode */
+[data-dark="true"] .filter-pill-active {
+  background: linear-gradient(135deg, #8b1a2d 0%, #4a0e1a 100%);
+  border-color: #8b1a2d;
+}
+
+[data-dark="true"] .progress-bar-fill {
+  background: linear-gradient(90deg, #6e1525, #b52240);
+}
+
+.login-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.1rem;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.login-card p {
+  margin: 0.35rem 0 1.4rem;
+  color: var(--text-2);
+  font-size: 1rem;
+}
+
+.login-card form {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-card label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-label);
+}
+
+.login-card input {
+  border: 1.5px solid var(--border-input);
+  border-radius: 12px;
+  min-height: 50px;
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+
+.login-card input:focus {
+  border-color: var(--btn-primary);
+}
+
+.login-card button[type="submit"] {
+  margin-top: 0.4rem;
+  min-height: 52px;
+  border: none;
+  border-radius: 12px;
+  background: var(--btn-primary);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.login-card button[type="submit"]:active {
+  background: var(--btn-primary-active);
+}
+
+/* ── Dark mode toggle ───────────────────────────────────────────── */
+
+.dark-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1.5px solid var(--btn-outline-border);
+  background: var(--btn-outline-bg);
+  color: var(--text);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dark-toggle:active {
+  opacity: 0.7;
+}
+
+/* ── App shell ──────────────────────────────────────────────────── */
+
+.app-shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0.75rem 0.875rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-left: max(0.875rem, env(safe-area-inset-left));
+  padding-right: max(0.875rem, env(safe-area-inset-right));
+}
+
+/* ── Top bar ────────────────────────────────────────────────────── */
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.top-bar h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.top-bar p {
+  margin: 0.15rem 0 0;
+  color: var(--text-2);
+  font-size: 0.85rem;
+}
+
+.volunteer-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.volunteer-block > span {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-label);
+}
+
+.volunteer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.volunteer-actions button {
+  border: 1.5px solid var(--btn-outline-border);
+  border-radius: 10px;
+  background: var(--btn-outline-bg);
+  color: var(--text);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  min-height: 38px;
+}
+
+/* ── Cluster tabs (horizontal scroll strip) ─────────────────────── */
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: 0 0 auto;
+  min-width: 78px;
+  border: none;
+  border-radius: 14px;
+  background: var(--tab-bg);
+  color: var(--tab-text);
+  min-height: 68px;
+  padding: 0.55rem 0.6rem;
+  display: grid;
+  align-content: center;
+  gap: 0.15rem;
+  text-align: center;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+
+.tab:active {
+  opacity: 0.8;
+}
+
+.tab-active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+}
+
+.tab-num {
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.tab-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 72px;
+}
+
+.tab-count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+/* ── Cluster panel ──────────────────────────────────────────────── */
+
+.cluster-panel {
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 0.875rem;
+  box-shadow: var(--shadow-card);
+}
+
+.cluster-heading {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cluster-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.875rem;
+}
+
+.cluster-metrics span {
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+/* ── House list ─────────────────────────────────────────────────── */
+
+.house-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.house-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem;
+  background: var(--surface);
+}
+
+.house-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.house-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  flex: 1;
+  color: var(--text);
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.status-pending_delivery {
+  background: var(--pill-pending-bg);
+  color: var(--pill-pending-text);
+}
+
+.status-placed_at_door {
+  background: var(--pill-placed-bg);
+  color: var(--pill-placed-text);
+}
+
+.status-delivered {
+  background: var(--pill-delivered-bg);
+  color: var(--pill-delivered-text);
+}
+
+.house-id,
+.house-meta {
+  margin: 0.3rem 0;
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+
+/* ── Status buttons ─────────────────────────────────────────────── */
+
+.status-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+}
+
+.status-button {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1.5px solid var(--status-btn-border);
+  background: var(--status-btn-bg);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.2rem;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.status-button:active {
+  opacity: 0.75;
+}
+
+.status-selected {
+  border-color: var(--status-selected-border);
+  background: var(--status-selected-bg);
+  font-weight: 700;
+  color: var(--status-selected-text);
+}
+
+/* ── Progress bar ───────────────────────────────────────────────── */
+
+.progress-bar-wrap {
+  height: 6px;
+  background: var(--progress-track);
+  border-radius: 99px;
+  margin-bottom: 0.875rem;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--progress-fill);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+/* ── View switcher (Tracker | Logs) ────────────────────────────── */
+
+.view-switcher {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.875rem;
+  background: var(--surface-2);
+  border-radius: 14px;
+  padding: 0.3rem;
+}
+
+.view-tab {
+  flex: 1;
+  min-height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.view-tab-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Search bar ─────────────────────────────────────────────────── */
+
+.search-bar-wrap {
+  margin-bottom: 0.6rem;
+}
+
+.search-input {
+  width: 100%;
+  min-height: 44px;
+  border: 1.5px solid var(--border-input);
+  border-radius: 12px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.95rem;
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  border-color: var(--btn-primary);
+}
+
+/* ── Status filter row ──────────────────────────────────────────── */
+
+.status-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.filter-pill {
+  min-height: 34px;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.filter-pill-active {
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: #ffffff;
+}
+
+.search-count {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  margin-left: 0.2rem;
+}
+
+/* ── Logs view ──────────────────────────────────────────────────── */
+
+.logs-view {
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 0.875rem;
+  box-shadow: var(--shadow-card);
+}
+
+.logs-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.875rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.filter-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.log-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.log-entry {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  background: var(--surface);
+}
+
+.log-entry-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.log-time {
+  font-size: 0.78rem;
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.log-volunteer {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.log-address {
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-top: 0.15rem;
+}
+
+.log-cluster {
+  font-size: 0.78rem;
+  color: var(--text-2);
+  margin-top: 0.1rem;
+}
+
+.logs-empty {
+  text-align: center;
+  color: var(--text-2);
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+  margin: 0;
+}
+
+/* ── Misc ───────────────────────────────────────────────────────── */
+
+.error-text {
+  margin: 0.5rem 0;
+  color: #e05568;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ── Login background aura (subtle drifting planes) ────────────── */
+
+.login-waves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.aura-plane {
+  position: absolute;
+  width: 180%;
+  height: 55%;
+  left: -40%;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.aura-plane-1 {
+  top: 35%;
+  background: linear-gradient(135deg, var(--wave-1) 0%, transparent 55%);
+  animation: aura-drift-a 28s ease-in-out infinite;
+}
+
+.aura-plane-2 {
+  top: 52%;
+  background: linear-gradient(115deg, transparent 35%, var(--wave-2) 60%, transparent 80%);
+  animation: aura-drift-b 36s ease-in-out infinite;
+  animation-delay: -10s;
+}
+
+.aura-plane-3 {
+  top: 10%;
+  width: 100%;
+  height: 70%;
+  left: 0;
+  background: radial-gradient(ellipse 70% 50% at 75% 50%, var(--wave-3) 0%, transparent 100%);
+  animation: aura-drift-c 45s ease-in-out infinite;
+  animation-delay: -20s;
+}
+
+@keyframes aura-drift-a {
+  0%, 100% { transform: translateX(0)   rotate(-1.5deg) scaleX(1);    }
+  40%       { transform: translateX(3%)  rotate(0.5deg)  scaleX(1.02); }
+  70%       { transform: translateX(-2%) rotate(-2deg)   scaleX(0.98); }
+}
+
+@keyframes aura-drift-b {
+  0%, 100% { transform: translateX(0)   rotate(1deg)   scaleX(1);    }
+  35%       { transform: translateX(-3%) rotate(-0.5deg) scaleX(1.03); }
+  65%       { transform: translateX(2%)  rotate(1.5deg) scaleX(0.97); }
+}
+
+@keyframes aura-drift-c {
+  0%, 100% { transform: translateY(0)   scale(1);    opacity: 1;   }
+  50%       { transform: translateY(-4%) scale(1.04); opacity: 0.7; }
+}
+
+/* ── Responsive tweaks (larger screens) ─────────────────────────── */
+
+@media (min-width: 540px) {
+  .top-bar h1 {
+    font-size: 1.9rem;
+  }
+
+  .tab {
+    min-width: 100px;
+  }
+
+  .tab-name {
+    max-width: 88px;
+  }
+
+  .status-button {
+    font-size: 0.85rem;
+  }
+}

@@ -1,0 +1,412 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import ClusterTabs from "./components/ClusterTabs";
+import HouseRow from "./components/HouseRow";
+import DarkModeToggle from "./components/DarkModeToggle";
+import LogsView from "./components/LogsView";
+import LoginWaves from "./components/LoginWaves";
+
+const STATUS_LABELS = {
+  pending_delivery: "Pending Delivery",
+  placed_at_door: "Placed At Door",
+  delivered: "Delivered"
+};
+
+function normalizeNameInput(name) {
+  return name.trim();
+}
+
+function App() {
+  const [session, setSession] = useState(() => {
+    const raw = localStorage.getItem("ikhlas-session");
+    return raw ? JSON.parse(raw) : null;
+  });
+  const [passcodeInput, setPasscodeInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [clusters, setClusters] = useState([]);
+  const [activeClusterId, setActiveClusterId] = useState(null);
+  const [activeView, setActiveView] = useState("tracker"); // "tracker" | "logs"
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all"); // "all" | "pending" | "completed"
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [updatingHouseId, setUpdatingHouseId] = useState(null);
+  const logsViewRef = useRef(null);
+
+  const activeCluster = useMemo(
+    () => clusters.find((cluster) => cluster.id === activeClusterId) ?? null,
+    [clusters, activeClusterId]
+  );
+
+  // Reset search and filter when cluster changes
+  useEffect(() => {
+    setSearchQuery("");
+    setStatusFilter("all");
+  }, [activeClusterId]);
+
+  async function handleLogin(event) {
+    event.preventDefault();
+    const volunteerName = normalizeNameInput(nameInput);
+
+    if (!passcodeInput || !volunteerName) {
+      setError("Passcode and volunteer name are required.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode: passcodeInput, volunteerName })
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid passcode or name.");
+      }
+
+      const data = await response.json();
+      const nextSession = {
+        passcode: passcodeInput,
+        volunteerName: data.volunteer.displayName,
+        isAdmin: data.isAdmin ?? false
+      };
+      localStorage.setItem("ikhlas-session", JSON.stringify(nextSession));
+      setSession(nextSession);
+      setPasscodeInput("");
+      setNameInput("");
+    } catch (loginError) {
+      setError(loginError.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadData(currentSession) {
+    const response = await fetch("/api/bootstrap", {
+      headers: {
+        "x-passcode": currentSession.passcode,
+        "x-volunteer-name": currentSession.volunteerName
+      }
+    });
+
+    if (response.status === 401) {
+      throw new Error("Unauthorized. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Unable to load tracker data.");
+    }
+
+    const payload = await response.json();
+    setClusters(payload.clusters);
+    setActiveClusterId((previous) => previous ?? payload.clusters[0]?.id ?? null);
+  }
+
+  useEffect(() => {
+    if (!session) {
+      return undefined;
+    }
+
+    let socket;
+
+    loadData(session).catch((loadError) => {
+      setError(loadError.message);
+      if (loadError.message.includes("Unauthorized")) {
+        localStorage.removeItem("ikhlas-session");
+        setSession(null);
+      }
+    });
+
+    socket = io({
+      auth: {
+        passcode: session.passcode,
+        volunteerName: session.volunteerName
+      }
+    });
+
+    socket.on("house:updated", ({ house }) => {
+      setClusters((currentClusters) =>
+        currentClusters.map((cluster) => {
+          if (cluster.id !== house.clusterId) {
+            return cluster;
+          }
+
+          const updatedHouses = cluster.houses.map((entry) =>
+            entry.id === house.id ? house : entry
+          );
+
+          const totals = updatedHouses.reduce(
+            (acc, currentHouse) => {
+              acc[currentHouse.status] += 1;
+              return acc;
+            },
+            { pending_delivery: 0, placed_at_door: 0, delivered: 0 }
+          );
+
+          return {
+            ...cluster,
+            houses: updatedHouses,
+            totals
+          };
+        })
+      );
+
+      // Forward live updates to the Logs view if it is mounted
+      if (logsViewRef.current?.addEntry) {
+        logsViewRef.current.addEntry({
+          id: `live-${Date.now()}`,
+          ts: house.lastUpdatedAt,
+          volunteer: house.lastUpdatedBy ?? "Unknown",
+          status: house.status,
+          houseId: house.houseId,
+          address: house.address ?? "",
+          cluster: clusters.find((c) => c.id === house.clusterId)?.name ?? ""
+        });
+      }
+    });
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [session]);
+
+  async function changeHouseStatus(houseId, status) {
+    if (!session) {
+      return;
+    }
+
+    setUpdatingHouseId(houseId);
+
+    try {
+      const response = await fetch(`/api/houses/${houseId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-passcode": session.passcode,
+          "x-volunteer-name": session.volunteerName
+        },
+        body: JSON.stringify({ status })
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not update status.");
+      }
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setUpdatingHouseId(null);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("ikhlas-session");
+    setSession(null);
+    setClusters([]);
+    setActiveClusterId(null);
+    setActiveView("tracker");
+  }
+
+  if (!session) {
+    return (
+      <main className="login-screen">
+        <LoginWaves />
+        <section className="login-card">
+          <div className="login-top-row">
+            <h1>Ikhlas Impact</h1>
+            <DarkModeToggle />
+          </div>
+          <p>Donation Delivery Tracker</p>
+          <form onSubmit={handleLogin}>
+            <label>
+              Shared Passcode
+              <input
+                type="password"
+                value={passcodeInput}
+                onChange={(event) => setPasscodeInput(event.target.value)}
+                autoComplete="off"
+              />
+            </label>
+
+            <label>
+              Volunteer Name
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(event) => setNameInput(event.target.value)}
+                autoComplete="name"
+              />
+            </label>
+
+            <button type="submit" disabled={loading}>
+              {loading ? "Joining..." : "Enter Tracker"}
+            </button>
+          </form>
+
+          {error ? <p className="error-text">{error}</p> : null}
+        </section>
+      </main>
+    );
+  }
+
+  const q = searchQuery.toLowerCase();
+  const filteredHouses = activeCluster
+    ? activeCluster.houses.filter((h) => {
+        const matchSearch =
+          !q ||
+          h.address.toLowerCase().includes(q) ||
+          h.houseId.toLowerCase().includes(q);
+
+        const matchStatus =
+          statusFilter === "all" ||
+          (statusFilter === "pending" && h.status === "pending_delivery") ||
+          (statusFilter === "completed" &&
+            (h.status === "placed_at_door" || h.status === "delivered"));
+
+        return matchSearch && matchStatus;
+      })
+    : [];
+
+  return (
+    <main className="app-shell">
+      <header className="top-bar">
+        <div>
+          <h1>Ikhlas Impact</h1>
+          <p>Live donation bag delivery tracker</p>
+        </div>
+
+        <div className="volunteer-block">
+          <span>{session.volunteerName}</span>
+          <div className="volunteer-actions">
+            <DarkModeToggle />
+            <button onClick={logout}>Log out</button>
+          </div>
+        </div>
+      </header>
+
+      {error ? <p className="error-text">{error}</p> : null}
+
+      {session.isAdmin && (
+        <div className="view-switcher" role="tablist">
+          <button
+            role="tab"
+            aria-selected={activeView === "tracker"}
+            className={`view-tab ${activeView === "tracker" ? "view-tab-active" : ""}`}
+            onClick={() => setActiveView("tracker")}
+          >
+            Tracker
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeView === "logs"}
+            className={`view-tab ${activeView === "logs" ? "view-tab-active" : ""}`}
+            onClick={() => setActiveView("logs")}
+          >
+            Logs
+          </button>
+        </div>
+      )}
+
+      {activeView === "logs" && session.isAdmin ? (
+        <LogsView session={session} ref={logsViewRef} />
+      ) : (
+        <>
+          <ClusterTabs
+            clusters={clusters}
+            activeClusterId={activeClusterId}
+            onSelectCluster={setActiveClusterId}
+          />
+
+          {activeCluster ? (
+            <section className="cluster-panel">
+              <p className="cluster-heading">{activeCluster.name}</p>
+
+              {(() => {
+                const completed =
+                  activeCluster.totals.placed_at_door + activeCluster.totals.delivered;
+                const pct =
+                  activeCluster.totalHouses > 0
+                    ? Math.round((completed / activeCluster.totalHouses) * 100)
+                    : 0;
+                return (
+                  <>
+                    <div
+                      className="progress-bar-wrap"
+                      role="progressbar"
+                      aria-valuenow={completed}
+                      aria-valuemax={activeCluster.totalHouses}
+                    >
+                      <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
+                    </div>
+
+                    <div className="cluster-metrics">
+                      <span>Pending: {activeCluster.totals.pending_delivery}</span>
+                      <span>Completed: {completed}</span>
+                      <span>Total: {activeCluster.totalHouses}</span>
+                    </div>
+                  </>
+                );
+              })()}
+
+              <div className="search-bar-wrap">
+                <input
+                  className="search-input"
+                  type="search"
+                  placeholder="Search by address or unit no…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="status-filter-row">
+                {[
+                  { key: "all", label: "All" },
+                  { key: "pending", label: "Pending" },
+                  { key: "completed", label: "Completed" }
+                ].map((f) => (
+                  <button
+                    key={f.key}
+                    className={`filter-pill ${statusFilter === f.key ? "filter-pill-active" : ""}`}
+                    onClick={() => setStatusFilter(f.key)}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+                {(searchQuery || statusFilter !== "all") && (
+                  <span className="search-count">
+                    {filteredHouses.length} of {activeCluster.houses.length}
+                  </span>
+                )}
+              </div>
+
+              <div className="house-list">
+                {filteredHouses.length > 0 ? (
+                  filteredHouses.map((house) => (
+                    <HouseRow
+                      key={house.id}
+                      house={{ ...house, statusLabel: STATUS_LABELS[house.status] }}
+                      onStatusChange={changeHouseStatus}
+                      updating={updatingHouseId === house.id}
+                    />
+                  ))
+                ) : (
+                  <p className="logs-empty">No houses match your search.</p>
+                )}
+              </div>
+            </section>
+          ) : (
+            <section className="cluster-panel">
+              <p>No cluster data loaded yet.</p>
+            </section>
+          )}
+        </>
+      )}
+    </main>
+  );
+}
+
+export default App;
