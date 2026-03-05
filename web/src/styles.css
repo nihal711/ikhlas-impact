@@ -920,6 +920,254 @@ input {
   50%       { transform: translateY(-4%) scale(1.04); opacity: 0.7; }
 }
 
+/* ── Allocation view ─────────────────────────────────────────────── */
+
+.alloc-view {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.alloc-cluster {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.alloc-cluster-mine {
+  border-color: var(--btn-primary);
+}
+
+[data-dark="true"] .alloc-cluster-mine {
+  border-color: #8b1a2d;
+}
+
+.alloc-cluster-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.alloc-cluster-mine .alloc-cluster-header {
+  background: color-mix(in srgb, var(--btn-primary) 10%, var(--surface-2));
+}
+
+[data-dark="true"] .alloc-cluster-mine .alloc-cluster-header {
+  background: color-mix(in srgb, #8b1a2d 15%, var(--surface-2));
+}
+
+.alloc-cluster-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  border-radius: 6px;
+  padding: 0.1rem 0.4rem;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.alloc-cluster-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alloc-you-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--btn-primary);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+[data-dark="true"] .alloc-you-badge {
+  background: #8b1a2d;
+}
+
+.alloc-names {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.75rem;
+  min-height: 2.75rem;
+}
+
+.alloc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem 0.2rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.alloc-chip-me {
+  background: color-mix(in srgb, var(--btn-primary) 12%, var(--surface-2));
+  border-color: var(--btn-primary);
+  font-weight: 700;
+}
+
+[data-dark="true"] .alloc-chip-me {
+  background: color-mix(in srgb, #8b1a2d 20%, var(--surface-2));
+  border-color: #8b1a2d;
+}
+
+.alloc-chip-name {
+  line-height: 1.2;
+}
+
+.alloc-chip-name-editable {
+  cursor: pointer;
+}
+
+.alloc-chip-name-editable:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.alloc-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.alloc-delete-btn:hover {
+  background: rgba(192, 55, 74, 0.15);
+  color: #c0374a;
+}
+
+.alloc-add-btn {
+  min-height: 30px;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  border: 1.5px dashed var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+
+.alloc-add-btn:hover {
+  border-color: var(--btn-primary);
+  color: var(--btn-primary);
+}
+
+[data-dark="true"] .alloc-add-btn:hover {
+  border-color: #8b1a2d;
+  color: #e8849a;
+}
+
+.alloc-add-row,
+.alloc-edit-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.alloc-add-input,
+.alloc-edit-input {
+  flex: 1;
+  min-width: 100px;
+  min-height: 32px;
+  border: 1.5px solid var(--border-input);
+  border-radius: 8px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.88rem;
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.alloc-add-input:focus,
+.alloc-edit-input:focus {
+  border-color: var(--btn-primary);
+}
+
+.alloc-save-btn {
+  min-height: 32px;
+  padding: 0.2rem 0.7rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--btn-primary);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.alloc-save-btn:active {
+  background: var(--btn-primary-active);
+}
+
+[data-dark="true"] .alloc-save-btn {
+  background: #8b1a2d;
+}
+
+[data-dark="true"] .alloc-save-btn:active {
+  background: #6e1525;
+}
+
+.alloc-cancel-btn {
+  min-height: 32px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.alloc-empty {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  font-style: italic;
+}
+
+.alloc-error {
+  font-size: 0.8rem;
+  color: #e05568;
+  font-weight: 600;
+  width: 100%;
+}
+
 /* ── Responsive tweaks (larger screens) ─────────────────────────── */
 
 @media (min-width: 540px) {

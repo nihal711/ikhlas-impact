@@ -4,6 +4,7 @@ import ClusterTabs from "./components/ClusterTabs";
 import HouseRow from "./components/HouseRow";
 import DarkModeToggle from "./components/DarkModeToggle";
 import LogsView from "./components/LogsView";
+import AllocationView from "./components/AllocationView";
 import LoginWaves from "./components/LoginWaves";
 import Logo from "./components/Logo";
 
@@ -38,7 +39,8 @@ function App() {
   const [nameInput, setNameInput] = useState("");
   const [clusters, setClusters] = useState([]);
   const [activeClusterId, setActiveClusterId] = useState(null);
-  const [activeView, setActiveView] = useState("tracker"); // "tracker" | "logs"
+  const [activeView, setActiveView] = useState("tracker"); // "tracker" | "allocation" | "logs"
+  const [allocations, setAllocations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all"); // "all" | "pending" | "completed"
   const [error, setError] = useState("");
@@ -114,8 +116,19 @@ function App() {
     }
 
     const payload = await response.json();
+    const incomingAllocations = payload.allocations ?? [];
     setClusters(payload.clusters);
-    setActiveClusterId((previous) => previous ?? payload.clusters[0]?.id ?? null);
+    setAllocations(incomingAllocations);
+
+    // Auto-jump: if this user is allocated to a cluster, select it on first load
+    const myName = currentSession.volunteerName.toLowerCase().trim();
+    const myAlloc = incomingAllocations.find(
+      (a) => a.name.toLowerCase().trim() === myName
+    );
+    setActiveClusterId((previous) => {
+      if (previous !== null) return previous;
+      return myAlloc?.clusterId ?? payload.clusters[0]?.id ?? null;
+    });
   }
 
   useEffect(() => {
@@ -142,6 +155,10 @@ function App() {
 
     socket.on("houses:reset", () => {
       loadData(session).catch(() => {});
+    });
+
+    socket.on("allocations:updated", ({ allocations: updated }) => {
+      setAllocations(updated);
     });
 
     socket.on("house:updated", ({ house }) => {
@@ -224,6 +241,7 @@ function App() {
     localStorage.removeItem("ikhlas-session");
     setSession(null);
     setClusters([]);
+    setAllocations([]);
     setActiveClusterId(null);
     setActiveView("tracker");
   }
@@ -325,16 +343,24 @@ function App() {
 
       {error ? <p className="error-text">{error}</p> : null}
 
-      {session.isAdmin && (
-        <div className="view-switcher" role="tablist">
-          <button
-            role="tab"
-            aria-selected={activeView === "tracker"}
-            className={`view-tab ${activeView === "tracker" ? "view-tab-active" : ""}`}
-            onClick={() => setActiveView("tracker")}
-          >
-            Tracker
-          </button>
+      <div className="view-switcher" role="tablist">
+        <button
+          role="tab"
+          aria-selected={activeView === "tracker"}
+          className={`view-tab ${activeView === "tracker" ? "view-tab-active" : ""}`}
+          onClick={() => setActiveView("tracker")}
+        >
+          Tracker
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeView === "allocation"}
+          className={`view-tab ${activeView === "allocation" ? "view-tab-active" : ""}`}
+          onClick={() => setActiveView("allocation")}
+        >
+          Allocation
+        </button>
+        {session.isAdmin && (
           <button
             role="tab"
             aria-selected={activeView === "logs"}
@@ -343,11 +369,19 @@ function App() {
           >
             Logs
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {activeView === "logs" && session.isAdmin ? (
         <LogsView session={session} ref={logsViewRef} />
+      ) : activeView === "allocation" ? (
+        <AllocationView
+          session={session}
+          clusters={clusters}
+          allocations={allocations}
+          isAdmin={session.isAdmin}
+          onAllocationsChange={setAllocations}
+        />
       ) : (
         <>
           <ClusterTabs

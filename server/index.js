@@ -13,7 +13,11 @@ import {
   clearActivityLog,
   resetAllHouseStatuses,
   updateHouseStatus,
-  normalizeNameKey
+  normalizeNameKey,
+  getAllocations,
+  addAllocation,
+  updateAllocation,
+  deleteAllocation
 } from "./db.js";
 
 dotenv.config();
@@ -86,7 +90,47 @@ app.post("/api/session", (req, res) => {
 
 app.get("/api/bootstrap", authFromHeaders, (_req, res) => {
   const clusters = getClusterSnapshot();
-  return res.json({ clusters });
+  const allocations = getAllocations();
+  return res.json({ clusters, allocations });
+});
+
+app.get("/api/allocations", authFromHeaders, (_req, res) => {
+  return res.json({ allocations: getAllocations() });
+});
+
+app.post("/api/allocations", authFromHeaders, adminOnly, (req, res) => {
+  const { clusterId, name } = req.body ?? {};
+  if (!clusterId || !name?.trim()) {
+    return res.status(400).json({ error: "clusterId and name are required" });
+  }
+  const result = addAllocation(clusterId, name);
+  if (!result) {
+    return res.status(409).json({ error: "That name is already assigned to this cluster" });
+  }
+  const allocations = getAllocations();
+  io.emit("allocations:updated", { allocations });
+  return res.json({ allocations });
+});
+
+app.put("/api/allocations/:id", authFromHeaders, adminOnly, (req, res) => {
+  const id = Number(req.params.id);
+  const { name } = req.body ?? {};
+  if (!Number.isInteger(id) || !name?.trim()) {
+    return res.status(400).json({ error: "Invalid id or name" });
+  }
+  updateAllocation(id, name);
+  const allocations = getAllocations();
+  io.emit("allocations:updated", { allocations });
+  return res.json({ allocations });
+});
+
+app.delete("/api/allocations/:id", authFromHeaders, adminOnly, (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: "Invalid id" });
+  deleteAllocation(id);
+  const allocations = getAllocations();
+  io.emit("allocations:updated", { allocations });
+  return res.json({ allocations });
 });
 
 app.patch("/api/houses/:houseId/status", authFromHeaders, (req, res) => {

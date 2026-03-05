@@ -19,6 +19,16 @@ const db = new Database(dbPath);
 export const STATUS_VALUES = ["pending_delivery", "placed_at_door", "delivered"];
 
 db.exec(`
+  CREATE TABLE IF NOT EXISTS allocations (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    cluster_id INTEGER NOT NULL,
+    name       TEXT    NOT NULL,
+    FOREIGN KEY(cluster_id) REFERENCES clusters(id) ON DELETE CASCADE,
+    UNIQUE(cluster_id, name)
+  );
+`);
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS volunteers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     display_name TEXT NOT NULL,
@@ -243,6 +253,37 @@ export function wipeAndImportClusters(inputRows) {
   });
 
   transaction(inputRows);
+}
+
+export function getAllocations() {
+  return db
+    .prepare(
+      `SELECT a.id, a.cluster_id AS clusterId, c.name AS clusterName, a.name
+       FROM allocations a
+       JOIN clusters c ON c.id = a.cluster_id
+       ORDER BY c.sort_order ASC, a.name ASC`
+    )
+    .all();
+}
+
+export function addAllocation(clusterId, name) {
+  try {
+    return db
+      .prepare("INSERT INTO allocations (cluster_id, name) VALUES (?, ?)")
+      .run(Number(clusterId), name.trim());
+  } catch {
+    return null; // duplicate
+  }
+}
+
+export function updateAllocation(id, name) {
+  return db
+    .prepare("UPDATE allocations SET name = ? WHERE id = ?")
+    .run(name.trim(), Number(id));
+}
+
+export function deleteAllocation(id) {
+  return db.prepare("DELETE FROM allocations WHERE id = ?").run(Number(id));
 }
 
 export default db;
