@@ -245,7 +245,7 @@ function App() {
             </label>
 
             <button type="submit" disabled={loading}>
-              {loading ? "Joining..." : "Enter Tracker"}
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
@@ -303,7 +303,7 @@ function App() {
           <span>{session.volunteerName}</span>
           <div className="volunteer-actions">
             <DarkModeToggle />
-            <button onClick={logout}>Log out</button>
+            <button onClick={logout}>Logout</button>
           </div>
         </div>
       </header>
